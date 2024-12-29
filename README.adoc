@@ -1,0 +1,3 @@
+Binary files for my NixOS dotfiles and other weirdness I don't want polluting my main repo.
+
+Sounds in /notifs are sourced from https://notificationsounds.com
