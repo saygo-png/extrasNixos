@@ -12,8 +12,7 @@ from anki import hooks
 from anki.template import TemplateRenderContext
 from anki.utils import htmlToTextLine
 from aqt.reviewer import Reviewer
-from aqt.browser.previewer import BrowserPreviewer
-from aqt import mw, gui_hooks, dialogs
+from aqt import mw, gui_hooks
 from aqt.utils import tooltip
 
 import re
@@ -112,18 +111,14 @@ def saveField(note, fld, val):
     note.flush()
 
 def on_js_message(handled, url, context):
-    if not isinstance(context, Reviewer) and not isinstance(context, BrowserPreviewer):
+    if not isinstance(context, Reviewer):
         return handled
 
     if url.startswith("ankisave#"):
         fld, nid, val = url.replace("ankisave#", "").split("#", 2)
         nid = int(nid)
-        if isinstance(context, BrowserPreviewer):
-            card = context.card()
-            note = card.note()
-        else:
-            card = context.card
-            note = card.note()
+        card = context.card
+        note = card.note()
         config = mw.addonManager.getConfig(__name__)
         if config['debug']:
             assert nid == note.id, "{} == {}".format(nid, note.id)
@@ -142,14 +137,7 @@ def on_js_message(handled, url, context):
         if nid != note.id:
             note = note2
         saveField(note, fld, val)
-        if isinstance(context, BrowserPreviewer):
-            context._parent.begin_reset()
-            context._parent.end_reset()
-        else:
-            card.q(reload=True)
-        editCurrent = dialogs._dialogs["EditCurrent"][1]
-        if editCurrent and editCurrent.editor.note.id == nid:
-            editCurrent.editor.set_note(note)
+        card.q(reload=True)
         return True, None
     elif url.startswith("ankisave!speedfocus#"):
         mw.reviewer.bottom.web.eval("""
